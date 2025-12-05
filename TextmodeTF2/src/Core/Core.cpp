@@ -141,8 +141,10 @@ void CCore::Load()
 	{
 		char* cAppdataPath = nullptr;
 		if (_dupenv_s(&cAppdataPath, nullptr, "LOCALAPPDATA") == 0 && cAppdataPath)
+		{
 			G::AppdataPath = std::format("{}\\{}_{}\\", cAppdataPath, "Amalgam\\Textmode", cBotID);
 			free(cAppdataPath);
+		}
 		free(cBotID);
 	}
 	if (G::AppdataPath.size())

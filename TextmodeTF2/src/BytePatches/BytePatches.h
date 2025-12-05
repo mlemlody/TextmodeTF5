@@ -61,7 +61,7 @@ public:
 			BytePatch("client.dll", "B9 ? ? ? ? E8 ? ? ? ? 48 85 C0 74 ? 41 B8 ? ? ? ? 48 8B D6 48 8B C8 E8 ? ? ? ? 48 8B C8 EB ? 48 8B CD 48 89 8E ? ? ? ? 48 8B D6 48 8B 01 FF 90 ? ? ? ? 48 8B 96 ? ? ? ? 4C 8D 05 ? ? ? ? 48 8B CE E8 ? ? ? ? B9", 0x0, "E9 B9 00"),
 			BytePatch("client.dll", "48 8B 8E ? ? ? ? 33 D2 48 8B 01 FF 90 ? ? ? ? 4C 8D 5C 24", 0x0, "EB 10"),	
 
-			// CStorePanel::RequestPricesheet (calls CCharacterInfoPanel::CreateStorePanel and runs CGCClientJobGetUserData)
+			// CStorePanel::RequestPricesheet (avoids calling CCharacterInfoPanel::CreateStorePanel and CGCClientJobGetUserData)
 			BytePatch("client.dll", "40 57 48 83 EC ? E8 ? ? ? ? 48 8B C8", 0x0, "C3"),
 
 			// CCharacterInfoPanel::CreateStorePanel (Do nothing)
