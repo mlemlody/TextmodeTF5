@@ -42,6 +42,8 @@ bool BytePatch::Initialize()
 	VirtualProtect(m_pAddress, m_iSize, flNewProtect, &flOldProtect);
 
 	Write(m_vPatch);
+
+	U::Core.AppendSuccessText("BytePatches", std::format("Successfully patched {:#x} ('{}', '{}')!", uintptr_t(m_pAddress) + m_iOffset, m_sModule, m_sSignature).c_str());
 	return m_bIsPatched = true;
 }
 

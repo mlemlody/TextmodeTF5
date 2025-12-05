@@ -109,7 +109,9 @@ bool CInterfaces::Initialize()
 		{
 			U::Core.AppendFailText(std::format("CInterfaces::Initialize() failed to initialize:\n  {}\n  {}", Interface->m_pszDLLName, Interface->m_pszVersion).c_str());
 			bFail = true;
+			continue;
 		}
+		U::Core.AppendSuccessText("Interfaces", std::format("Successfully initialized: {}, {}", Interface->m_pszDLLName, Interface->m_pszVersion).c_str());
 	}
 
 	return !bFail;

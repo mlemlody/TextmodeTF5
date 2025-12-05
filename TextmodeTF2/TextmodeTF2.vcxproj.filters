@@ -20,6 +20,7 @@
     <ClCompile Include="src\Hooks\IMaterialSystem_Hooks.cpp" />
     <ClCompile Include="src\Hooks\CVideoModeCommon_SetupStartupGraphic.cpp" />
     <ClCompile Include="src\Hooks\Host_IsSecureServerAllowed.cpp" />
+    <ClCompile Include="src\Hooks\Con_DebugLog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Core\Core.h" />

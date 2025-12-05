@@ -12,6 +12,7 @@ public:
 	void Unload();
 
 	void AppendFailText(const char* sMessage, bool bCritical = false);
+	void AppendSuccessText(const char* sFunction, const char* sMessage);
 
 	bool m_bUnload = false;
 	bool m_bTimeout = false;

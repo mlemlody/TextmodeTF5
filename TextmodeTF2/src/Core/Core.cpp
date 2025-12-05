@@ -6,7 +6,7 @@
 
 #define LOAD_WAIT 0 - m_bTimeout
 #define LOAD_FAIL -1
-#define CHECK(x) if (x == LOAD_FAIL) {m_bUnload = true; return;}
+#define CHECK(x, sFailMessage) if (x == LOAD_FAIL) {m_bUnload = true; SDK::Output("TextmodeTF2", sFailMessage); return;}
 
 void CCore::AppendFailText(const char* sMessage, bool bCritical)
 {
@@ -14,7 +14,12 @@ void CCore::AppendFailText(const char* sMessage, bool bCritical)
 		return;
 
 	ssFailStream << std::format("{}\n", sMessage);
-	OutputDebugStringA(std::format("{}\n", sMessage).c_str());
+	SDK::Output(sMessage);
+}
+
+void CCore::AppendSuccessText(const char* sFunction, const char* sMessage)
+{
+	SDK::Output(sFunction, sMessage);
 }
 
 int CCore::LoadFilesystem()
@@ -75,11 +80,25 @@ int CCore::LoadEngine()
 		}
 	}
 
+	static bool bCon_DebugLogInit{ false };
+	if (!bCon_DebugLogInit)
+	{
+		if (!G::Con_DebugLogAddr)
+			G::Con_DebugLogAddr = U::Memory.FindSignature("engine.dll", "48 89 4C 24 ? 48 89 54 24 ? 4C 89 44 24 ? 4C 89 4C 24 ? 57");
+		if (G::Con_DebugLogAddr)
+		{
+			if (!U::Hooks.Initialize("Con_DebugLog"))
+				return LOAD_FAIL;
+			bCon_DebugLogInit = true;
+		}
+	}
+
 	static bool bBytePatchesInit{ false };
 	if (!bBytePatchesInit && U::BytePatches.Initialize("engine"))
 		bBytePatchesInit = true;
 
-	if(!bStartupGraphicHookInit || !bInsecureBypassInit || !bTextmodeInit || !bBytePatchesInit)
+
+	if(!bStartupGraphicHookInit || !bInsecureBypassInit || !bTextmodeInit || !bCon_DebugLogInit || !bBytePatchesInit)
 		return LOAD_WAIT;
 
 	return m_bEngineLoaded = true;
@@ -117,6 +136,29 @@ int CCore::LoadClient()
 void CCore::Load()
 {
 	G::CurrentPath = std::filesystem::current_path().string() + "\\TextmodeTF2";
+	char* cBotID = nullptr;
+	if (_dupenv_s(&cBotID, nullptr, "BOTID") == 0 && cBotID)
+	{
+		char* cAppdataPath = nullptr;
+		if (_dupenv_s(&cAppdataPath, nullptr, "LOCALAPPDATA") == 0 && cAppdataPath)
+			G::AppdataPath = std::format("{}\\{}_{}\\", cAppdataPath, "Amalgam\\Textmode", cBotID);
+			free(cAppdataPath);
+		free(cBotID);
+	}
+	if (G::AppdataPath.size())
+	{
+		try
+		{
+			if (!std::filesystem::exists(G::AppdataPath))
+				std::filesystem::create_directories(G::AppdataPath);
+
+			std::ofstream resetFile(G::AppdataPath + TEXTMODE_LOG_FILE);
+			resetFile.close();
+			resetFile.open(G::AppdataPath + CONSOLE_LOG_FILE);
+			resetFile.close();
+		}
+		catch (...) {}
+	}
 
 	do
 	{
@@ -127,13 +169,13 @@ void CCore::Load()
 			GetModuleHandleA("client.dll");
 
 		int iFilesystem = m_bFilesystemLoaded ? 1 : LoadFilesystem();
-		CHECK(iFilesystem)
+		CHECK(iFilesystem, "Failed to load file system")
 		int iEngine = m_bEngineLoaded ? 1 : LoadEngine();
-		CHECK(iEngine)
+		CHECK(iEngine, "Failed to load engine")
 		int iMatSys = m_bMatSysLoaded ? 1 : LoadMatSys();
-		CHECK(iMatSys)
+		CHECK(iMatSys, "Failed to load material system")
 		int iClient = m_bClientLoaded ? 1 : LoadClient();
-		CHECK(iClient)
+		CHECK(iClient, "Failed to load client")
 	}
 	while (!m_bFilesystemLoaded || !m_bEngineLoaded || !m_bMatSysLoaded || !m_bClientLoaded);
 
@@ -156,9 +198,10 @@ void CCore::Unload()
 	U::Hooks.Unload();
 	U::BytePatches.Unload();
 
+	SDK::Output("TextmodeTF2", "Failed to load");
+
 	ssFailStream << "\nCtrl + C to copy. Logged to TextmodeTF2\\fail_log.txt. \n";
 	ssFailStream << "Built @ " __DATE__ ", " __TIME__;
-//	SDK::Output("Failed to load", ssFailStream.str().c_str(), true, MB_OK | MB_ICONERROR);
 	ssFailStream << "\n\n\n\n";
 	std::ofstream file;
 	file.open(G::CurrentPath + "\\fail_log.txt", std::ios_base::app);

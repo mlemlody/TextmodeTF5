@@ -1,21 +1,35 @@
 #include "SDK.h"
 
-void SDK::Output(const char* cFunction, const char* cLog, bool bDebug, int iMessageBox)
+void SDK::Output(const char* cFunction, const char* cLog, bool bLogFile, int iMessageBox)
 {
 	if (cLog)
 	{
-		if (bDebug)
-			OutputDebugString(std::format("[{}] {}\n", cFunction, cLog).c_str());
+		if (bLogFile)
+			OutputFile(TEXTMODE_LOG_FILE, std::format("[{}] {}\n", cFunction, cLog).c_str());
 		if (iMessageBox != -1)
 			MessageBox(nullptr, cLog, cFunction, iMessageBox);
 	}
 	else
 	{
-		if (bDebug)
-			OutputDebugString(std::format("{}\n", cFunction).c_str());
+		if (bLogFile)
+			OutputFile(TEXTMODE_LOG_FILE, std::format("{}\n", cFunction).c_str());
 		if (iMessageBox != -1)
 			MessageBox(nullptr, "", cFunction, iMessageBox);
 	}
+}
+
+void SDK::OutputFile(const char* cOutputFileName, const char* cMsg)
+{
+	if (G::AppdataPath.empty())
+		return;
+	try
+	{
+		std::ofstream file;
+		file.open(G::AppdataPath + cOutputFileName, std::ios::app);
+		file << cMsg;
+		file.close();
+	}
+	catch (...) {}
 }
 
 bool SDK::BlacklistFile(const char* cFileName)

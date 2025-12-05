@@ -225,6 +225,7 @@
     <ClCompile Include="src\BytePatches\BytePatches.cpp" />
     <ClCompile Include="src\Core\Core.cpp" />
     <ClCompile Include="src\DllMain.cpp" />
+    <ClCompile Include="src\Hooks\Con_DebugLog.cpp" />
     <ClCompile Include="src\Hooks\CVideoModeCommon_SetupStartupGraphic.cpp" />
     <ClCompile Include="src\Hooks\Host_IsSecureServerAllowed.cpp" />
     <ClCompile Include="src\Hooks\IBaseFileSystem_Hooks.cpp" />

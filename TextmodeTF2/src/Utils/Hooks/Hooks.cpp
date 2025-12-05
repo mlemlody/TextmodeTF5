@@ -24,6 +24,9 @@ bool CHooks::Initialize(const char* sName)
 	bFail = MH_EnableHook(pHook->m_pTarget) != MH_OK;
 	if (bFail)
 		U::Core.AppendFailText(std::format("MinHook failed to enable {} hook!", sName).c_str(), true);
+	else
+		U::Core.AppendSuccessText("Hooks", std::format("Successfully enabled {} hook!", sName).c_str());
+
 	return !bFail;
 }
 

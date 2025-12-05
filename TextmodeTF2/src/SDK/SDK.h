@@ -10,10 +10,12 @@
 #include <intrin.h>
 #include <format>
 #include <exception>
+#include <fstream>
 
 namespace SDK
 {
-	void Output(const char* cFunction, const char* cLog = nullptr, bool bDebug = true, int iMessageBox = -1);
+	void Output(const char* cFunction, const char* cLog = nullptr, bool bLogFile = true, int iMessageBox = -1);
+	void OutputFile(const char* cOutputFileName, const char* cMsg);
 	bool BlacklistFile(const char* cFileName);
 	double PlatFloatTime();
 }
