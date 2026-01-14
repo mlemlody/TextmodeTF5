@@ -43,33 +43,33 @@ public:
 
 			// evil cathook's plan b implementation
 
-			// Mod_LoadLighting (sub_180102C50)
+			// Mod_LoadLighting
 			// nulls out lighting data loading for maps
 			BytePatch("engine.dll", "40 53 48 83 EC 20 48 8B D9 48 63 09 85 C9 75 18", 0x0, "C3"),
 			
-			// Sprite_LoadModel (sub_180105390)
+			// Sprite_LoadModel
 			// nulls out sprite model loading
 			BytePatch("engine.dll", "48 89 5C 24 08 48 89 74 24 18 57 41 56 41 57 48", 0x0, "C3"),
 
-			// Mod_LoadWorldlights (sub_1801025E0)
+			// Mod_LoadWorldlights
 			// nulls out world light loading
 			BytePatch("engine.dll", "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 57", 0x0, "C3"),
 
-			// Mod_LoadTexinfo (sub_180103E30)
+			// Mod_LoadTexinfo
 			// forces mat_loadtextures 0 logic to skip material loading
 			BytePatch("engine.dll", "0F 84 ? ? ? ? 48 63 7E 44", 0x0, "90 E9"),
 		}},
 		{"materialsystem",
 		{
-			// CMaterialSystem::Init (sub_180017050)
+			// CMaterialSystem::Init
 			// Returns 1 (INIT_OK) to prevent material system initialization but allow engine to continue anywyay
 			BytePatch("materialsystem.dll", "40 53 48 83 EC 20 48 8B D9 48 8B 0D ? ? ? ? 48 8B 01 FF 90 ? ? ? ? 48 8B 0D", 0x0, "B8 01 00 00 00 C3"),
 
-			// CMaterialSystem::BeginFrame (sub_180015630)
+			// CMaterialSystem::BeginFrame
 			// bye bye frame rendering!
 			BytePatch("materialsystem.dll", "48 8B 0D ? ? ? ? 48 8B 01 48 FF A0 ? ? ? ? CC", 0x0, "C3"),
 
-			// CMaterialSystem::FindMaterial (sub_180017310)
+			// CMaterialSystem::FindMaterial
 			// returns NULL for every material lookup
 			BytePatch("materialsystem.dll", "48 8B F9 48 8B CA 49 8B D8 FF 10 4C 8B C0 48 8D 15 ? ? ? ? 48 8D 4C 24 20", 0x0, "31 C0 C3"),
 		}},
@@ -134,7 +134,7 @@ public:
 		}},
 		{"datacache",
 		{
-			// CDataCacheSection::Unlock (sub_18000F280)
+			// CDataCacheSection::Unlock CRASHFIX!
 			BytePatch("datacache.dll", "48 89 5C 24 18 48 89 7C 24 20 41 56 48 83 EC 20 F6 81 E0 00 00 00 04", 0x41, "90 90 90 90 90"),
 		}}
 	};
