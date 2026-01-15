@@ -40,6 +40,38 @@ public:
 			BytePatch("engine.dll", "0F 85 ? ? ? ? 48 8D 15 ? ? ? ? B9", 0x0, "0F 81"),
 			// Force Con_DebugLog to run
 			BytePatch("engine.dll", "74 ? 48 8D 54 24 ? 48 8D 0D ? ? ? ? E8 ? ? ? ? 38 1D", 0x0, "90 90"),
+
+			// evil cathook's plan b implementation
+
+			// Mod_LoadLighting
+			// nulls out lighting data loading for maps
+			BytePatch("engine.dll", "40 53 48 83 EC 20 48 8B D9 48 63 09 85 C9 75 18", 0x0, "C3"),
+			
+			// Sprite_LoadModel
+			// nulls out sprite model loading
+			BytePatch("engine.dll", "48 89 5C 24 08 48 89 74 24 18 57 41 56 41 57 48", 0x0, "C3"),
+
+			// Mod_LoadWorldlights
+			// nulls out world light loading
+			BytePatch("engine.dll", "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 57", 0x0, "C3"),
+
+			// Mod_LoadTexinfo
+			// forces mat_loadtextures 0 logic to skip material loading
+			BytePatch("engine.dll", "0F 84 ? ? ? ? 48 63 7E 44", 0x0, "90 E9"),
+		}},
+		{"materialsystem",
+		{
+			// CMaterialSystem::Init
+			// Returns 1 (INIT_OK) to prevent material system initialization but allow engine to continue anywyay
+			BytePatch("materialsystem.dll", "40 53 48 83 EC 20 48 8B D9 48 8B 0D ? ? ? ? 48 8B 01 FF 90 ? ? ? ? 48 8B 0D", 0x0, "B8 01 00 00 00 C3"),
+
+			// CMaterialSystem::BeginFrame
+			// bye bye frame rendering!
+			BytePatch("materialsystem.dll", "48 8B 0D ? ? ? ? 48 8B 01 48 FF A0 ? ? ? ? CC", 0x0, "C3"),
+
+			// CMaterialSystem::FindMaterial
+			// returns NULL for every material lookup
+			BytePatch("materialsystem.dll", "48 8B F9 48 8B CA 49 8B D8 FF 10 4C 8B C0 48 8D 15 ? ? ? ? 48 8D 4C 24 20", 0x0, "31 C0 C3"),
 		}},
 		{"client",
 		{
@@ -99,6 +131,17 @@ public:
 
 			// CBaseHudChat::ChatPrintf
 			BytePatch("client.dll", "4C 89 4C 24 ? 48 89 4C 24 ? 55 53", 0x0, "C3"),
+
+			// Fixes crash (CEconItemView::GetItemDefinitionIndex)
+			BytePatch("client.dll", "48 8B 41 08 48 85 C0 75 0A 48 8B 01 8B 80 BC 00 00 00 C3 8B 40 20 C3", 0x0, "48 8B 41 08 48 85 C0 75 0F 48 8B 01 48 85 C0 74 0B 8B 80 BC 00 00 00 C3 8B 40 20 C3 31 C0 C3"),
+			
+			// Fixes crash
+			BytePatch("client.dll", "45 85 C0 78 3E 4C 8B 11 45 3B 82 E8 00 00 00 7D 32", 0x0, "4C 8B 11 4D 85 D2 74 3B 45 3B 82 E8 00 00 00 73 32"),
+		}},
+		{"datacache",
+		{
+			// CDataCacheSection::Unlock CRASHFIX!
+			BytePatch("datacache.dll", "48 89 5C 24 18 48 89 7C 24 20 41 56 48 83 EC 20 F6 81 E0 00 00 00 04", 0x41, "90 90 90 90 90"),
 		}}
 	};
 };

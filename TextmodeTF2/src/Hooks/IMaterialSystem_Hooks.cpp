@@ -6,6 +6,33 @@ MAKE_HOOK(IMaterialSystem_SwapBuffers, U::Memory.GetVFunc(I::MaterialSystem, 40)
 	return;
 }
 
+MAKE_HOOK(IMaterialSystem_FindMaterial, U::Memory.GetVFunc(I::MaterialSystem, 71), IMaterial*, // 71
+		  void* rcx, char const* pMaterialName, const char* pTextureGroupName, bool complain, const char* pComplainPrefix)
+{
+	if (SDK::BlacklistFile(pMaterialName))
+	{
+		if (std::strstr(pMaterialName, "engine/defaultcubemap"))
+		{
+			return CALL_ORIGINAL(rcx, "debug/debugempty", pTextureGroupName, false, nullptr);
+		}
+
+		return CALL_ORIGINAL(rcx, "debug/debugempty", pTextureGroupName, false, nullptr);
+	}
+
+	return CALL_ORIGINAL(rcx, pMaterialName, pTextureGroupName, complain, pComplainPrefix);
+}
+
+MAKE_HOOK(IMaterialSystem_FindTexture, U::Memory.GetVFunc(I::MaterialSystem, 79), ITexture*, // 79
+		  void* rcx, char const* pTextureName, const char* pTextureGroupName, bool complain, int nAdditionalCreationFlags)
+{
+	if (SDK::BlacklistFile(pTextureName))
+	{
+		return CALL_ORIGINAL(rcx, "error", pTextureGroupName, false, nAdditionalCreationFlags);
+	}
+
+	return CALL_ORIGINAL(rcx, pTextureName, pTextureGroupName, complain, nAdditionalCreationFlags);
+}
+
 MAKE_HOOK(IMaterialSystem_CreateRenderTargetTexture, U::Memory.GetVFunc(I::MaterialSystem, 84), ITexture*, // 84
 		  void* rcx, int w, int h, RenderTargetSizeMode_t sizeMode, ImageFormat	format, MaterialRenderTargetDepth_t depth)
 {

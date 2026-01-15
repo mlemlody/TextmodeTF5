@@ -36,7 +36,7 @@ int CCore::LoadFilesystem()
 		"IFileSystem_AsyncReadMultiple", "IFileSystem_OpenEx",
 		"IFileSystem_ReadFileEx", "IFileSystem_AddFilesToFileCache",
 		"IBaseFileSystem_Open", "IBaseFileSystem_Precache",
-		"IBaseFileSystem_ReadFile"
+		"IBaseFileSystem_ReadFile", "IBaseFileSystem_FileExists"
 	};
 
 	for (auto cHook : vFilesystemHooks)
@@ -93,12 +93,43 @@ int CCore::LoadEngine()
 		}
 	}
 
+	static bool bRenderHooksInit{ false };
+	if (!bRenderHooksInit)
+	{
+		if (!G::CStaticPropMgr_DrawStaticPropsAddr)
+			G::CStaticPropMgr_DrawStaticPropsAddr = U::Memory.FindSignature("engine.dll", "4C 8B DC 49 89 5B 08 49 89 6B 10 49 89 73 18 57 41 54 41 55 41 56 41 57 48 83 EC 70 4C 8B 3D ? ? ? ? 33 FF");
+		if (!G::CStaticPropMgr_UnserializeStaticPropsAddr)
+			G::CStaticPropMgr_UnserializeStaticPropsAddr = U::Memory.FindSignature("engine.dll", "40 57 48 81 EC E0 00 00 00 80 B9 98 00 00 00 00");
+		if (!G::S_PrecacheSoundAddr)
+			G::S_PrecacheSoundAddr = U::Memory.FindSignature("engine.dll", "4C 8B DC 49 89 5B 08 49 89 73 18 57 48 83 EC 50");
+		if (!G::CModelLoader_GetModelForNameAddr)
+			G::CModelLoader_GetModelForNameAddr = U::Memory.FindSignature("engine.dll", "44 89 44 24 18 53 48 83 EC 20 48 8B D9 E8 ?? ?? ?? ?? 4C 8D 44 24 40");
+		if (!G::CModelRender_DrawModelExecuteAddr)
+			G::CModelRender_DrawModelExecuteAddr = U::Memory.FindSignature("engine.dll", "4C 89 4C 24 20 48 89 4C 24 08 55 53 56 57 41 54 41 56 41 57 48 8D AC 24 D0 FD FF FF 48 81 EC 30 03 00 00 41 8B 70 40");
+		if (!G::CDebugOverlay_AddBoxOverlayAddr)
+			G::CDebugOverlay_AddBoxOverlayAddr = U::Memory.FindSignature("engine.dll", "48 89 74 24 18 4C 89 74 24 20 41 57 48 81 EC 80 00 00 00 48 8D 0D ? ? ? ? 49 8B F1 4D 8B F0 4C 8B FA E8 ? ? ? ? 84 C0");
+		if (!G::CDebugOverlay_AddLineOverlayAddr)
+			G::CDebugOverlay_AddLineOverlayAddr = U::Memory.FindSignature("engine.dll", "4C 8B DC 53 55 56 57 41 56 48 81 EC 80 00 00 00 49 8D 43 30 0F 29 74 24 70 48 89 81 10 04 00 00 48 8D 69 10");
+
+		if (G::CStaticPropMgr_DrawStaticPropsAddr && G::CStaticPropMgr_UnserializeStaticPropsAddr && G::S_PrecacheSoundAddr && G::CModelLoader_GetModelForNameAddr && G::CModelRender_DrawModelExecuteAddr && G::CDebugOverlay_AddBoxOverlayAddr && G::CDebugOverlay_AddLineOverlayAddr)
+		{
+			if (!U::Hooks.Initialize("CStaticPropMgr_DrawStaticProps")) return LOAD_FAIL;
+			if (!U::Hooks.Initialize("CStaticPropMgr_UnserializeStaticProps")) return LOAD_FAIL;
+			if (!U::Hooks.Initialize("S_PrecacheSound")) return LOAD_FAIL;
+			if (!U::Hooks.Initialize("CModelLoader_GetModelForName")) return LOAD_FAIL;
+			if (!U::Hooks.Initialize("CModelRender_DrawModelExecute")) return LOAD_FAIL;
+			if (!U::Hooks.Initialize("CDebugOverlay_AddBoxOverlay")) return LOAD_FAIL;
+			if (!U::Hooks.Initialize("CDebugOverlay_AddLineOverlay")) return LOAD_FAIL;
+			bRenderHooksInit = true;
+		}
+	}
+
 	static bool bBytePatchesInit{ false };
 	if (!bBytePatchesInit && U::BytePatches.Initialize("engine"))
 		bBytePatchesInit = true;
 
 
-	if(!bStartupGraphicHookInit || !bInsecureBypassInit || !bTextmodeInit || !bCon_DebugLogInit || !bBytePatchesInit)
+	if(!bStartupGraphicHookInit || !bInsecureBypassInit || !bTextmodeInit || !bCon_DebugLogInit || !bBytePatchesInit || !bRenderHooksInit)
 		return LOAD_WAIT;
 
 	return m_bEngineLoaded = true;
@@ -115,7 +146,7 @@ int CCore::LoadMatSys()
 	{
 		"IMaterialSystem_CreateRenderTargetTexture", "IMaterialSystem_CreateNamedRenderTargetTextureEx",
 		"IMaterialSystem_CreateNamedRenderTargetTexture", "IMaterialSystem_CreateNamedRenderTargetTextureEx2",
-		"IMaterialSystem_SwapBuffers"
+		"IMaterialSystem_SwapBuffers", "IMaterialSystem_FindMaterial", "IMaterialSystem_FindTexture"
 	};
 
 	for (auto cHook : vMatSystemHooks)
@@ -133,9 +164,47 @@ int CCore::LoadClient()
 	return m_bClientLoaded = true;
 }
 
+int CCore::LoadParticles()
+{
+	if (!G::CParticleSystemMgr_DrawRenderCacheAddr)
+		G::CParticleSystemMgr_DrawRenderCacheAddr = U::Memory.FindSignature("client.dll", "48 8B C4 88 50 10 48 89 48 08 55 57 41 55 41 57 48 8D A8 28 FD FF FF");
+
+	if (!G::CParticleCollection_SimulateAddr)
+		G::CParticleCollection_SimulateAddr = U::Memory.FindSignature("client.dll", "48 8B C4 44 88 40 18 57 41 56 48 81 EC 08 01 00 00");
+
+	if (!G::CParticleSystemMgr_ReadParticleConfigFileAddr)
+		G::CParticleSystemMgr_ReadParticleConfigFileAddr = U::Memory.FindSignature("client.dll", "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 56 41 57 48 81 EC ?? ?? ?? ?? 80 3A 21 48 8D 7A 01");
+
+	if (G::CParticleSystemMgr_DrawRenderCacheAddr && G::CParticleCollection_SimulateAddr && G::CParticleSystemMgr_ReadParticleConfigFileAddr)
+	{
+		if (!U::Hooks.Initialize("CParticleSystemMgr_DrawRenderCache"))
+			return LOAD_FAIL;
+		if (!U::Hooks.Initialize("CParticleCollection_Simulate"))
+			return LOAD_FAIL;
+		if (!U::Hooks.Initialize("CParticleSystemMgr_ReadParticleConfigFile"))
+			return LOAD_FAIL;
+		m_bParticlesLoaded = true;
+	}
+
+	return LOAD_WAIT;
+}
+
+int CCore::LoadMDLCache()
+{
+	G::IMDLCache = reinterpret_cast<IMDLCache*>(U::Memory.FindInterface("datacache.dll", "MDLCache004"));
+	if (!G::IMDLCache)
+		return LOAD_WAIT;
+
+	if (!U::Hooks.Initialize("IMDLCache_ProcessDataIntoCache"))
+		return LOAD_FAIL;
+
+	return m_bMDLCacheLoaded = true;
+}
+
 void CCore::Load()
 {
 	G::CurrentPath = std::filesystem::current_path().string() + "\\TextmodeTF2";
+	SDK::Output("Core", "Initializing logging...");
 	char* cBotID = nullptr;
 	if (_dupenv_s(&cBotID, nullptr, "BOTID") == 0 && cBotID)
 	{
@@ -178,8 +247,14 @@ void CCore::Load()
 		CHECK(iMatSys, "Failed to load material system")
 		int iClient = m_bClientLoaded ? 1 : LoadClient();
 		CHECK(iClient, "Failed to load client")
+
+		int iParticles = m_bParticlesLoaded ? 1 : LoadParticles();
+		CHECK(iParticles, "Failed to load particle system")
+
+		int iMDLCache = m_bMDLCacheLoaded ? 1 : LoadMDLCache();
+		CHECK(iMDLCache, "Failed to load MDL cache")
 	}
-	while (!m_bFilesystemLoaded || !m_bEngineLoaded || !m_bMatSysLoaded || !m_bClientLoaded);
+	while (!m_bFilesystemLoaded || !m_bEngineLoaded || !m_bMatSysLoaded || !m_bClientLoaded || !m_bParticlesLoaded || !m_bMDLCacheLoaded);
 
 	SDK::Output("TextmodeTF2", std::format("Loaded in {} seconds", SDK::PlatFloatTime()).c_str());
 }

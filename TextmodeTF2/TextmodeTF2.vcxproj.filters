@@ -18,6 +18,7 @@
     <ClCompile Include="src\Hooks\IFileSystem_Hooks.cpp" />
     <ClCompile Include="src\Hooks\IBaseFileSystem_Hooks.cpp" />
     <ClCompile Include="src\Hooks\IMaterialSystem_Hooks.cpp" />
+    <ClCompile Include="src\Hooks\IMDLCache_ProcessDataIntoCache.cpp" />
     <ClCompile Include="src\Hooks\CVideoModeCommon_SetupStartupGraphic.cpp" />
     <ClCompile Include="src\Hooks\Host_IsSecureServerAllowed.cpp" />
     <ClCompile Include="src\Hooks\Con_DebugLog.cpp" />
@@ -46,6 +47,7 @@
     <ClInclude Include="src\BytePatches\BytePatches.h" />
     <ClInclude Include="src\SDK\Definitions\Interfaces\Interface.h" />
     <ClInclude Include="src\SDK\Definitions\Interfaces\IMaterialSystem.h" />
+    <ClInclude Include="src\SDK\Definitions\Interfaces\IMDLCache.h" />
     <ClInclude Include="src\Utils\Feature\Feature.h" />
   </ItemGroup>
 </Project>

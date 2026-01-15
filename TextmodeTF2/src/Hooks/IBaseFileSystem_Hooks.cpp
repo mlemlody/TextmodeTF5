@@ -25,3 +25,12 @@ MAKE_HOOK(IBaseFileSystem_ReadFile, U::Memory.GetVFunc(reinterpret_cast<void*>(G
 
 	return CALL_ORIGINAL(rcx, pFileName, pPath, buf, nMaxBytes, nStartingByte, pfnAlloc);
 }
+
+MAKE_HOOK(IBaseFileSystem_FileExists, U::Memory.GetVFunc(reinterpret_cast<void*>(G::IBaseFileSystemAddr), 10), bool,
+		  void* rcx, const char* pFileName, const char* pPathID)
+{
+	if (SDK::BlacklistFile(pFileName))
+		return false;
+
+	return CALL_ORIGINAL(rcx, pFileName, pPathID);
+}
