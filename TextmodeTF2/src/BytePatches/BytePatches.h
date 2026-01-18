@@ -58,12 +58,6 @@ public:
 			// Mod_LoadTexinfo
 			// forces mat_loadtextures 0 logic to skip material loading
 			BytePatch("engine.dll", "0F 84 ? ? ? ? 48 63 7E 44", 0x0, "90 E9"),
-			
-			// These SHOULD fix d3device failure
-			// CVideoMode_Common::CreateGameWindow
-			BytePatch("engine.dll", "48 89 5C 24 10 48 89 74 24 18 48 89 7C 24 20 41 56 48 83 EC 50 4C 8B F1 41 0F B6 F1 48 8D 0D ? ? ? ?", 0x0, "B0 01 C3"),
-			// CGame::CreateGameWindow
-			BytePatch("engine.dll", "40 55 53 56 57 41 57 48 8D AC 24 ? ? ? ? 48 81 EC ? ? ? ? 48 8B F1 C6 45 D0 00 B9 40 00", 0x0, "B0 01 C3"),
 		}},
 		{"materialsystem",
 		{
@@ -77,7 +71,7 @@ public:
 
 			// CMaterialSystem::FindMaterial
 			// returns NULL for every material lookup
-			// BytePatch("materialsystem.dll", "48 8B F9 48 8B CA 49 8B D8 FF 10 4C 8B C0 48 8D 15 ? ? ? ? 48 8D 4C 24 20", 0x0, "31 C0 C3"),
+			BytePatch("materialsystem.dll", "48 8B F9 48 8B CA 49 8B D8 FF 10 4C 8B C0 48 8D 15 ? ? ? ? 48 8D 4C 24 20", 0x0, "31 C0 C3"),
 		}},
 		{"client",
 		{

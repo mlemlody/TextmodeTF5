@@ -141,7 +141,7 @@ int CCore::LoadMatSys()
 		return LOAD_WAIT;
 
 	I::MaterialSystem->SetInStubMode(true);
-	U::BytePatches.Initialize("materialsystem");
+
 	static std::vector<const char*> vMatSystemHooks
 	{
 		"IMaterialSystem_CreateRenderTargetTexture", "IMaterialSystem_CreateNamedRenderTargetTextureEx",
